@@ -1,5 +1,9 @@
 # reclaim-cli
 
+[![npm](https://img.shields.io/npm/v/reclaim-cli)](https://www.npmjs.com/package/reclaim-cli)
+[![CI](https://img.shields.io/github/actions/workflow/status/favasconcelos/reclaim-cli/ci.yml?branch=main&label=CI)](https://github.com/favasconcelos/reclaim-cli/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/reclaim-cli)](LICENSE)
+
 Finds projects you haven't touched in a while and reclaims the disk space taken by their
 regenerable build output (`node_modules`, `.build`, `DerivedData`, Gradle `build`, …).
 Source files are never touched.
