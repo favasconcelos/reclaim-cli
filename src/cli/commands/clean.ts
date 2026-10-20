@@ -3,7 +3,7 @@ import * as p from '@clack/prompts'
 import { runCleanup } from '@/cli/cleanup'
 import { createContext, scanAndStore } from '@/cli/context'
 import type { ProjectReport } from '@/core/types'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c, formatBytes, formatIdle } from '@/util/format'
 import { isInside, tildify } from '@/util/path'
 
@@ -15,7 +15,9 @@ export interface CleanFlags {
 export async function cleanCommand(paths: string[], flags: CleanFlags): Promise<void> {
   const ctx = await createContext()
   if (ctx.config.roots.length === 0) {
-    throw new StaleError('No folders to watch yet. Run `stale init` or `stale add <folder>`.')
+    throw new ReclaimError(
+      'No folders to watch yet. Run `reclaim-cli init` or `reclaim-cli add <folder>`.',
+    )
   }
 
   const { report } = await scanAndStore(ctx)

@@ -95,9 +95,9 @@ describe('applyRemovals', () => {
 
 describe('launchd plist', () => {
   it('round-trips schedule and command, escaping XML', () => {
-    const command = ['/usr/local/bin/node', '/opt/a&b/stale.js', 'scan', '--notify']
+    const command = ['/usr/local/bin/node', '/opt/a&b/reclaim-cli.js', 'scan', '--notify']
     const xml = buildPlist({
-      label: 'dev.stale.daily',
+      label: 'dev.reclaim-cli.daily',
       programArguments: command,
       hour: 9,
       minute: 5,
@@ -105,7 +105,7 @@ describe('launchd plist', () => {
       stderrPath: '/tmp/err.log',
     })
 
-    expect(xml).toContain('/opt/a&amp;b/stale.js')
+    expect(xml).toContain('/opt/a&amp;b/reclaim-cli.js')
     expect(parsePlist(xml)).toEqual({ at: '09:05', command })
   })
 })

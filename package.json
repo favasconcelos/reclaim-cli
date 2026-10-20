@@ -24,7 +24,7 @@
   },
   "type": "module",
   "bin": {
-    "stale": "./dist/cli.js"
+    "reclaim-cli": "./dist/cli.js"
   },
   "files": [
     "dist"

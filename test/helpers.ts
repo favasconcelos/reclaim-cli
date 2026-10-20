@@ -14,7 +14,7 @@ afterEach(async () => {
 })
 
 export async function tempDir(): Promise<string> {
-  const dir = await realpath(await mkdtemp(join(tmpdir(), 'stale-test-')))
+  const dir = await realpath(await mkdtemp(join(tmpdir(), 'reclaim-cli-test-')))
   created.push(dir)
   return dir
 }

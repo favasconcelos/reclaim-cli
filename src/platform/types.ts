@@ -36,7 +36,7 @@ export interface ShellHook {
   rcFile: string
   /** File that holds the hook script; the rc line sources it. */
   scriptFile: string
-  /** Line to add to the rc file. It must not require `stale` on PATH. */
+  /** Line to add to the rc file. It must not require `reclaim-cli` on PATH. */
   rcLine: string
   /** Lines written by older versions that should be replaced by `rcLine`. */
   legacyRcLines: string[]

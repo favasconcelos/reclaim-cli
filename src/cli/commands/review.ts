@@ -1,17 +1,19 @@
 import * as p from '@clack/prompts'
 import { runCleanup } from '@/cli/cleanup'
 import { createContext, scanAndStore } from '@/cli/context'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c, formatBytes, formatIdle } from '@/util/format'
 import { tildify } from '@/util/path'
 
 export async function reviewCommand(): Promise<void> {
   const ctx = await createContext()
   if (ctx.config.roots.length === 0) {
-    throw new StaleError('No folders to watch yet. Run `stale init` or `stale add <folder>`.')
+    throw new ReclaimError(
+      'No folders to watch yet. Run `reclaim-cli init` or `reclaim-cli add <folder>`.',
+    )
   }
 
-  p.intro(c.bold('stale review'))
+  p.intro(c.bold('reclaim-cli review'))
   const spinner = p.spinner()
   spinner.start('Scanning projects…')
   const { report } = await scanAndStore(ctx)

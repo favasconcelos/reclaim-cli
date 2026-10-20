@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import type { ScheduleInstallOptions, Scheduler, ScheduleStatus } from '@/platform/types'
 import { run } from '@/util/exec'
 
-export const LAUNCHD_LABEL = 'dev.stale.daily'
+export const LAUNCHD_LABEL = 'dev.reclaim-cli.daily'
 
 const escapeXml = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -137,11 +137,12 @@ export function createLaunchdScheduler(
         try {
           await access(path)
         } catch {
-          problems.push(`${path} no longer exists; run \`stale schedule install\` again`)
+          problems.push(`${path} no longer exists; run \`reclaim-cli schedule install\` again`)
         }
       }
       const loaded = (await run('launchctl', ['print', `${domain}/${label}`])).ok
-      if (!loaded) problems.push('the job is not loaded in launchd; run `stale schedule install`')
+      if (!loaded)
+        problems.push('the job is not loaded in launchd; run `reclaim-cli schedule install`')
       return { installed: true, loaded, at, command, problems }
     },
   }

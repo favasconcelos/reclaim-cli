@@ -5,7 +5,8 @@ import type { ShellHook } from '@/platform/types'
 import { c } from '@/util/format'
 import { tildify } from '@/util/path'
 
-const RC_COMMENT = '# stale: cleanup reminder'
+const RC_COMMENT = '# reclaim-cli: cleanup reminder'
+const LEGACY_RC_COMMENT = '# stale: cleanup reminder'
 
 export type HookInstallStatus = 'added' | 'migrated' | 'unchanged'
 
@@ -27,7 +28,10 @@ export async function installHook(hook: ShellHook): Promise<HookInstallStatus> {
 
   const legacy = hook.legacyRcLines.find((line) => rc.includes(line))
   if (legacy) {
-    await writeFile(hook.rcFile, rc.replace(legacy, hook.rcLine))
+    await writeFile(
+      hook.rcFile,
+      rc.replace(legacy, hook.rcLine).replace(LEGACY_RC_COMMENT, RC_COMMENT),
+    )
     return 'migrated'
   }
 

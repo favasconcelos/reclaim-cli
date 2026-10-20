@@ -13,13 +13,13 @@ import {
   scheduleUninstallCommand,
 } from '@/cli/commands/schedule'
 import { snoozeCommand } from '@/cli/commands/snooze'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c } from '@/util/format'
 import pkg from '../package.json' with { type: 'json' }
 
 const program = new Command()
 program
-  .name('stale')
+  .name('reclaim-cli')
   .description('Find projects you have not touched in a while and reclaim their disk space.')
   .version(pkg.version)
 
@@ -29,7 +29,7 @@ function action<A extends unknown[]>(fn: (...args: A) => Promise<void> | void) {
     try {
       await fn(...args)
     } catch (error) {
-      if (error instanceof StaleError) {
+      if (error instanceof ReclaimError) {
         console.error(`${c.red('error:')} ${error.message}`)
       } else {
         console.error(error)

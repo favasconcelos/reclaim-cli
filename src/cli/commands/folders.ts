@@ -2,7 +2,7 @@ import { stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createContext } from '@/cli/context'
 import { saveConfig } from '@/config/store'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c } from '@/util/format'
 import { expandHome, tildify } from '@/util/path'
 
@@ -12,7 +12,7 @@ async function normalize(folder: string, mustBeDirectory: boolean): Promise<stri
     try {
       if (!(await stat(absolute)).isDirectory()) throw new Error('not a directory')
     } catch {
-      throw new StaleError(`${absolute} is not an existing folder.`)
+      throw new ReclaimError(`${absolute} is not an existing folder.`)
     }
   }
   return tildify(absolute)
@@ -32,7 +32,7 @@ export async function addCommand(folder: string): Promise<void> {
 export async function removeCommand(folder: string): Promise<void> {
   const ctx = await createContext()
   const entry = await normalize(folder, false)
-  if (!ctx.config.roots.includes(entry)) throw new StaleError(`${entry} is not a watched folder.`)
+  if (!ctx.config.roots.includes(entry)) throw new ReclaimError(`${entry} is not a watched folder.`)
   await saveConfig(ctx.paths.configDir, {
     ...ctx.config,
     roots: ctx.config.roots.filter((r) => r !== entry),
@@ -45,7 +45,7 @@ export async function ignoreCommand(path: string, flags: { remove?: boolean }): 
   const entry = await normalize(path, false)
   const has = ctx.config.ignore.includes(entry)
   if (flags.remove) {
-    if (!has) throw new StaleError(`${entry} is not in the ignore list.`)
+    if (!has) throw new ReclaimError(`${entry} is not in the ignore list.`)
     await saveConfig(ctx.paths.configDir, {
       ...ctx.config,
       ignore: ctx.config.ignore.filter((i) => i !== entry),

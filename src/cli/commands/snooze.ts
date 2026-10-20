@@ -1,6 +1,6 @@
 import { createContext } from '@/cli/context'
 import { clearPending, clearSnooze, setSnooze } from '@/core/state'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c, parseDuration } from '@/util/format'
 
 export async function snoozeCommand(
@@ -13,7 +13,8 @@ export async function snoozeCommand(
     console.log('Reminders resumed. The next scan will bring them back.')
     return
   }
-  if (!duration) throw new StaleError('Give a duration, e.g. `stale snooze 3d`, or use --clear.')
+  if (!duration)
+    throw new ReclaimError('Give a duration, e.g. `reclaim-cli snooze 3d`, or use --clear.')
   const until = Date.now() + parseDuration(duration)
   await setSnooze(ctx.paths.stateDir, until)
   await clearPending(ctx.paths.stateDir)

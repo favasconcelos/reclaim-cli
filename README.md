@@ -1,7 +1,7 @@
 # reclaim-cli
 
-Installs the `stale` command, which finds projects you haven't touched in a while and reclaims the disk space
-taken by their regenerable build output (`node_modules`, `.build`, `DerivedData`, Gradle `build`, …).
+Finds projects you haven't touched in a while and reclaims the disk space taken by their
+regenerable build output (`node_modules`, `.build`, `DerivedData`, Gradle `build`, …).
 Source files are never touched.
 
 macOS only for now. Supports Node.js, Swift (SwiftPM / Xcode) and Android (Gradle) projects.
@@ -10,7 +10,7 @@ macOS only for now. Supports Node.js, Swift (SwiftPM / Xcode) and Android (Gradl
 
 ```sh
 npm install -g reclaim-cli
-stale init              # folders, thresholds, daily schedule, terminal reminder
+reclaim-cli init        # folders, thresholds, daily schedule, terminal reminder
 ```
 
 To run from source instead: `npm ci && npm run build && npm link`.
@@ -23,9 +23,9 @@ To run from source instead: `npm ci && npm run build && npm link`.
    (default 60). Signs of life: newest source-file mtime (artifact folders excluded), last commit, last
    change to `.git/HEAD` / `.git/index`.
 3. **Measure** – sizes the artifacts of stale projects with `du`.
-4. **Remind** – the daily job writes `~/.local/state/stale/pending` and sends a notification when at
+4. **Remind** – the daily job writes `~/.local/state/reclaim-cli/pending` and sends a notification when at
    least `minReclaimableMB` can be reclaimed. A tiny zsh hook prints that line when you open a terminal.
-5. **Clean** – `stale review` (interactive) or `stale clean` removes only artifacts.
+5. **Clean** – `reclaim-cli review` (interactive) or `reclaim-cli clean` removes only artifacts.
 
 ### What counts as an artifact
 
@@ -38,48 +38,51 @@ To run from source instead: `npm ci && npm run build && npm link`.
 ### Safety
 
 - Stale projects with **uncommitted changes** or **unpushed commits** (repos with a remote) are listed
-  but skipped. Disable with `stale config set skipDirty false`.
+  but skipped. Disable with `reclaim-cli config set skipDirty false`.
 - A removal must be strictly inside its project (or DerivedData for Xcode); symlinks are never followed.
-- `stale clean --dry-run` shows exactly what would be removed. Every removal is logged (`stale log`).
+- `reclaim-cli clean --dry-run` shows exactly what would be removed. Every removal is logged (`reclaim-cli log`).
 
 ## Commands
 
 ```
-stale init                       interactive setup
-stale add|remove <folder>        manage watched folders
-stale ignore <path> [--remove]   never report a project at/below this path
-stale scan [--all] [--json] [--quiet] [--notify]
-stale review                     pick projects to clean interactively
-stale clean [paths…] [--dry-run] [-y]
-stale schedule install|uninstall|status [--at HH:mm]
-stale hook zsh                   print the terminal reminder snippet
-stale snooze <3d|12h> | --clear  mute reminders
-stale log [-n 20]                history of removals
-stale config get [key] | set <key> <value>
+reclaim-cli init                         interactive setup
+reclaim-cli add|remove <folder>          manage watched folders
+reclaim-cli ignore <path> [--remove]     never report a project at/below this path
+reclaim-cli scan [--all] [--json] [--quiet] [--notify]
+reclaim-cli review                       pick projects to clean interactively
+reclaim-cli clean [paths…] [--dry-run] [-y]
+reclaim-cli schedule install|uninstall|status [--at HH:mm]
+reclaim-cli hook install|print           terminal reminder for new zsh shells
+reclaim-cli snooze <3d|12h> | --clear    mute reminders
+reclaim-cli log [-n 20]                  history of removals
+reclaim-cli config get [key] | set <key> <value>
 ```
 
 ### Terminal reminder
 
-Add to `~/.zshrc` (or let `stale init` do it):
+`reclaim-cli init` offers to set this up, or run it yourself:
 
-```zsh
-eval "$(stale hook zsh)"
+```sh
+reclaim-cli hook install
 ```
 
-The snippet is pure zsh – opening a terminal never starts Node. Reminders older than 3 days are ignored.
+This writes `~/.config/reclaim-cli/hook.zsh` and adds one line to `~/.zshrc` that sources it. The script is
+pure zsh, so opening a terminal never starts Node and nothing breaks if `reclaim-cli` is not on your PATH.
+It prints the reminder once, on the first prompt (compatible with Powerlevel10k's instant prompt).
+Reminders older than 3 days are ignored.
 
 ### Daily schedule
 
-`stale schedule install` writes a launchd agent (`dev.stale.daily`) that runs
-`stale scan --notify --quiet` at `scheduleAt`. The agent stores the absolute path to Node and to
-`stale`; if you switch Node versions, run `stale schedule install` again (`stale schedule status`
+`reclaim-cli schedule install` writes a launchd agent (`dev.reclaim-cli.daily`) that runs
+`reclaim-cli scan --notify --quiet` at `scheduleAt`. The agent stores the absolute path to Node and to
+`reclaim-cli`; if you switch Node versions, run `reclaim-cli schedule install` again (`reclaim-cli schedule status`
 tells you when it's broken). If macOS blocks notifications, enable them under
 System Settings → Notifications (for `terminal-notifier` if installed, otherwise Script Editor).
 
 ## Configuration
 
-`~/.config/stale/config.json` (state in `~/.local/state/stale/`). Override locations with
-`STALE_CONFIG_DIR` / `STALE_STATE_DIR`.
+`~/.config/reclaim-cli/config.json` (state in `~/.local/state/reclaim-cli/`). Override locations with
+`RECLAIM_CLI_CONFIG_DIR` / `RECLAIM_CLI_STATE_DIR`.
 
 | Key | Default | |
 |---|---|---|

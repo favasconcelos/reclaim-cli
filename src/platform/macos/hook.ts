@@ -6,8 +6,11 @@ import { tildify } from '@/util/path'
 /** Reminders older than this are stale data and are not shown. */
 const MAX_AGE_SECONDS = 3 * 24 * 60 * 60
 
-/** Earlier versions added this line, which started Node on every new shell. */
-const LEGACY_RC_LINES = ['eval "$(stale hook zsh)"']
+/** Lines written while the tool was still called `stale`; they are replaced on `hook install`. */
+const LEGACY_RC_LINES = [
+  'eval "$(stale hook zsh)"',
+  '[[ -r "$HOME/.config/stale/hook.zsh" ]] && source "$HOME/.config/stale/hook.zsh"',
+]
 
 export function createZshHook(options: { configDir: string }): ShellHook {
   const scriptFile = join(options.configDir, 'hook.zsh')
@@ -21,10 +24,10 @@ export function createZshHook(options: { configDir: string }): ShellHook {
     legacyRcLines: LEGACY_RC_LINES,
     // Printing from a one-shot precmd hook (not while .zshrc loads) keeps Powerlevel10k's
     // instant prompt happy, and nothing here starts Node.
-    script: () => `# stale: pending cleanup reminder (pure zsh, never starts Node)
-_stale_reminder() {
-  add-zsh-hook -d precmd _stale_reminder
-  local file="\${STALE_STATE_DIR:-$HOME/.local/state/stale}/pending"
+    script: () => `# reclaim-cli: pending cleanup reminder (pure zsh, never starts Node)
+_reclaim_cli_reminder() {
+  add-zsh-hook -d precmd _reclaim_cli_reminder
+  local file="\${RECLAIM_CLI_STATE_DIR:-$HOME/.local/state/reclaim-cli}/pending"
   [[ -s $file ]] || return 0
   zmodload -F zsh/stat b:zstat 2>/dev/null || return 0
   zmodload zsh/datetime 2>/dev/null || return 0
@@ -34,7 +37,7 @@ _stale_reminder() {
   print -r -- "$(<"$file")"
 }
 autoload -Uz add-zsh-hook
-add-zsh-hook precmd _stale_reminder
+add-zsh-hook precmd _reclaim_cli_reminder
 `,
   }
 }

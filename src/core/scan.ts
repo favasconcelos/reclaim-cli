@@ -173,7 +173,7 @@ export async function scan(options: ScanOptions): Promise<ScanReport> {
     try {
       if ((await stat(root)).isDirectory()) existing.push(root)
     } catch {
-      // Missing folders are skipped; `stale scan` reports them separately.
+      // Missing folders are skipped; `reclaim-cli scan` reports them separately.
     }
   }
 

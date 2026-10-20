@@ -1,7 +1,7 @@
 import * as p from '@clack/prompts'
 import { createContext, scanAndStore } from '@/cli/context'
 import { renderReport } from '@/cli/render'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c } from '@/util/format'
 
 export interface ScanFlags {
@@ -14,7 +14,9 @@ export interface ScanFlags {
 export async function scanCommand(flags: ScanFlags): Promise<void> {
   const ctx = await createContext()
   if (ctx.config.roots.length === 0) {
-    throw new StaleError('No folders to watch yet. Run `stale init` or `stale add <folder>`.')
+    throw new ReclaimError(
+      'No folders to watch yet. Run `reclaim-cli init` or `reclaim-cli add <folder>`.',
+    )
   }
 
   const interactive = process.stdout.isTTY && !flags.json && !flags.quiet
@@ -33,8 +35,8 @@ export async function scanCommand(flags: ScanFlags): Promise<void> {
   if (flags.notify && ctx.config.notify && pending.message) {
     try {
       await ctx.platform.notifier.notify({
-        title: 'stale',
-        message: pending.message.replace(/^🧹 stale: /, ''),
+        title: 'reclaim-cli',
+        message: pending.message.replace(/^🧹 reclaim-cli: /, ''),
       })
     } catch (error) {
       console.error(

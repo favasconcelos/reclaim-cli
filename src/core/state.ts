@@ -44,7 +44,7 @@ export async function activeSnooze(stateDir: string, now = Date.now()): Promise<
 export function reminderMessage(report: ScanReport): string {
   const { staleProjects, reclaimableBytes } = report.totals
   const noun = staleProjects === 1 ? 'project' : 'projects'
-  return `🧹 stale: ${formatBytes(reclaimableBytes)} reclaimable across ${staleProjects} ${noun} → run "stale review"`
+  return `🧹 reclaim-cli: ${formatBytes(reclaimableBytes)} reclaimable across ${staleProjects} ${noun} → run "reclaim-cli review"`
 }
 
 export interface PendingResult {

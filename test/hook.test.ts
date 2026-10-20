@@ -15,12 +15,12 @@ async function setup() {
 }
 
 describe('zsh hook script', () => {
-  it('never starts Node or calls stale', async () => {
+  it('never starts Node or calls reclaim-cli', async () => {
     const { hook } = await setup()
-    expect(hook.script()).not.toMatch(/\bnode\b|\bstale\s+\w/)
+    expect(hook.script()).not.toMatch(/\bnode\b|\breclaim-cli\s+\w/)
   })
 
-  it('rc line only sources a file, so it is silent when stale is not installed', async () => {
+  it('rc line only sources a file, so it is silent when reclaim-cli is not installed', async () => {
     const { hook } = await setup()
     expect(hook.rcLine).toMatch(/^\[\[ -r .+ \]\] && source /)
     expect(hook.rcLine).not.toContain('eval')
@@ -41,7 +41,7 @@ describe.runIf(hasZsh)('zsh hook behaviour', () => {
         '-c',
         `source ${script}; print -- "--"; for f in $precmd_functions; do $f; done; for f in $precmd_functions; do $f; done`,
       ],
-      { env: { ...process.env, STALE_STATE_DIR: stateDir }, encoding: 'utf8' },
+      { env: { ...process.env, RECLAIM_CLI_STATE_DIR: stateDir }, encoding: 'utf8' },
     )
     return sourced
   }
@@ -78,13 +78,19 @@ describe('installHook', () => {
     expect(await readFile(hook.scriptFile, 'utf8')).toBe(hook.script())
   })
 
-  it('replaces the legacy eval line in place', async () => {
+  it.each([
+    ['the eval line', 'eval "$(stale hook zsh)"'],
+    [
+      'the old source line',
+      '[[ -r "$HOME/.config/stale/hook.zsh" ]] && source "$HOME/.config/stale/hook.zsh"',
+    ],
+  ])('migrates %s from the pre-rename `stale` hook in place', async (_name, legacyLine) => {
     const { hook } = await setup()
-    await writeFile(hook.rcFile, 'a\n# stale: cleanup reminder\neval "$(stale hook zsh)"\nb\n')
+    await writeFile(hook.rcFile, `a\n# stale: cleanup reminder\n${legacyLine}\nb\n`)
 
     expect(await installHook(hook)).toBe('migrated')
     expect(await readFile(hook.rcFile, 'utf8')).toBe(
-      `a\n# stale: cleanup reminder\n${hook.rcLine}\nb\n`,
+      `a\n# reclaim-cli: cleanup reminder\n${hook.rcLine}\nb\n`,
     )
   })
 })

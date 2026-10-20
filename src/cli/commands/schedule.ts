@@ -1,11 +1,11 @@
 import { realpathSync } from 'node:fs'
 import { createContext } from '@/cli/context'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 import { c } from '@/util/format'
 
 export function dailyCommand(): string[] {
   const script = process.argv[1]
-  if (!script) throw new StaleError('Cannot determine the path of the stale executable.')
+  if (!script) throw new ReclaimError('Cannot determine the path of the reclaim-cli executable.')
   return [process.execPath, realpathSync(script), 'scan', '--notify', '--quiet']
 }
 
@@ -13,7 +13,7 @@ export async function scheduleInstallCommand(flags: { at?: string }): Promise<vo
   const ctx = await createContext()
   const at = flags.at ?? ctx.config.scheduleAt
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(at))
-    throw new StaleError(`Invalid time "${at}". Use HH:mm (24h).`)
+    throw new ReclaimError(`Invalid time "${at}". Use HH:mm (24h).`)
 
   await ctx.platform.scheduler.install({ at, command: dailyCommand(), logDir: ctx.paths.stateDir })
   console.log(`${c.green('✔')} Daily scan scheduled at ${at}.`)
@@ -30,7 +30,7 @@ export async function scheduleStatusCommand(): Promise<void> {
   const ctx = await createContext()
   const status = await ctx.platform.scheduler.status()
   if (!status.installed) {
-    console.log('Not installed. Run `stale schedule install`.')
+    console.log('Not installed. Run `reclaim-cli schedule install`.')
     return
   }
   console.log(

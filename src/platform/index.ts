@@ -3,7 +3,7 @@ import { createMacNotifier } from '@/platform/macos/notifier'
 import { macosPaths } from '@/platform/macos/paths'
 import { createLaunchdScheduler } from '@/platform/macos/scheduler'
 import type { Platform } from '@/platform/types'
-import { StaleError } from '@/util/errors'
+import { ReclaimError } from '@/util/errors'
 
 export type { Platform } from '@/platform/types'
 
@@ -18,5 +18,7 @@ export function getPlatform(): Platform {
       hook: createZshHook({ configDir: macosPaths().configDir }),
     }
   }
-  throw new StaleError(`stale currently supports macOS only (detected "${process.platform}").`)
+  throw new ReclaimError(
+    `reclaim-cli currently supports macOS only (detected "${process.platform}").`,
+  )
 }

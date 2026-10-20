@@ -28,7 +28,7 @@ async function isDirectory(path: string): Promise<boolean> {
 
 export async function initCommand(): Promise<void> {
   const ctx = await createContext()
-  p.intro(c.bold('stale setup'))
+  p.intro(c.bold('reclaim-cli setup'))
 
   const defaultRoot = ctx.config.roots.length
     ? ctx.config.roots.join(', ')
@@ -119,5 +119,7 @@ export async function initCommand(): Promise<void> {
     }
   }
 
-  p.outro(`All set. Try ${c.cyan('stale scan')} now, or ${c.cyan('stale review')} to clean up.`)
+  p.outro(
+    `All set. Try ${c.cyan('reclaim-cli scan')} now, or ${c.cyan('reclaim-cli review')} to clean up.`,
+  )
 }

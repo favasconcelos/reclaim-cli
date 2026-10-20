@@ -15,7 +15,7 @@ export function createMacNotifier(): Notifier {
           '-message',
           message,
           '-group',
-          'stale',
+          'reclaim-cli',
         ])
         if (result.ok && !/turned off|not allowed/i.test(result.stdout + result.stderr)) return
         failure = (result.stderr || result.stdout).trim().split('\n')[0] ?? ''
