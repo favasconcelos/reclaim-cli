@@ -1,6 +1,6 @@
 {
   "name": "reclaim-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Finds stale local projects and reclaims disk space from their build artifacts",
   "keywords": [
     "cli",
