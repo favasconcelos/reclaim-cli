@@ -19,9 +19,12 @@ export function isHookInstalled(rc: string, hook: ShellHook): boolean {
 }
 
 /** Writes the hook script and makes sure the rc file sources it (replacing the legacy line). */
-export async function installHook(hook: ShellHook): Promise<HookInstallStatus> {
+export async function installHook(
+  hook: ShellHook,
+  completion?: string,
+): Promise<HookInstallStatus> {
   await mkdir(dirname(hook.scriptFile), { recursive: true })
-  await writeFile(hook.scriptFile, hook.script())
+  await writeFile(hook.scriptFile, hook.script({ completion }))
 
   const rc = await readRcFile(hook)
   if (isHookInstalled(rc, hook)) return 'unchanged'
@@ -40,19 +43,19 @@ export async function installHook(hook: ShellHook): Promise<HookInstallStatus> {
   return 'added'
 }
 
-export async function hookInstallCommand(): Promise<void> {
+export async function hookInstallCommand(completion: string): Promise<void> {
   const { platform } = await createContext()
-  const status = await installHook(platform.hook)
+  const status = await installHook(platform.hook, completion)
   const rc = tildify(platform.hook.rcFile)
   const messages: Record<HookInstallStatus, string> = {
     added: `Added the reminder to ${rc}.`,
     migrated: `Replaced the old hook line in ${rc}.`,
-    unchanged: `${rc} already sources the reminder.`,
+    unchanged: `${rc} already sources the hook (script refreshed).`,
   }
-  console.log(`${c.green('✔')} ${messages[status]} Open a new terminal to see it.`)
+  console.log(`${c.green('✔')} ${messages[status]} Open a new terminal to pick it up.`)
 }
 
-export async function hookPrintCommand(): Promise<void> {
+export async function hookPrintCommand(completion: string): Promise<void> {
   const { platform } = await createContext()
-  process.stdout.write(platform.hook.script())
+  process.stdout.write(platform.hook.script({ completion }))
 }
