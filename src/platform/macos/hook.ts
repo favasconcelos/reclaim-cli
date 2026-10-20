@@ -24,10 +24,12 @@ export function createZshHook(options: { configDir: string }): ShellHook {
     legacyRcLines: LEGACY_RC_LINES,
     // Printing from a one-shot precmd hook (not while .zshrc loads) keeps Powerlevel10k's
     // instant prompt happy, and nothing here starts Node.
-    script: () => `# reclaim-cli: pending cleanup reminder (pure zsh, never starts Node)
-_reclaim_cli_reminder() {
+    script: ({
+      completion,
+    } = {}) => `# reclaim-cli: pending cleanup reminder (pure zsh, never starts Node)
+${completion ? `${completion}\n` : ''}_reclaim_cli_reminder() {
   add-zsh-hook -d precmd _reclaim_cli_reminder
-  local file="\${RECLAIM_CLI_STATE_DIR:-$HOME/.local/state/reclaim-cli}/pending"
+${completion ? '  # By the first prompt compinit has run, so compdef exists whatever the rc file order.\n  (( $+functions[compdef] )) && compdef _reclaim_cli reclaim-cli\n' : ''}  local file="\${RECLAIM_CLI_STATE_DIR:-$HOME/.local/state/reclaim-cli}/pending"
   [[ -s $file ]] || return 0
   zmodload -F zsh/stat b:zstat 2>/dev/null || return 0
   zmodload zsh/datetime 2>/dev/null || return 0

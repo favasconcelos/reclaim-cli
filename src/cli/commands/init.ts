@@ -26,7 +26,7 @@ async function isDirectory(path: string): Promise<boolean> {
   }
 }
 
-export async function initCommand(): Promise<void> {
+export async function initCommand(completion: string): Promise<void> {
   const ctx = await createContext()
   p.intro(c.bold('reclaim-cli setup'))
 
@@ -114,7 +114,7 @@ export async function initCommand(): Promise<void> {
     })
     if (cancelled(add)) return
     if (add) {
-      await installHook(hook)
+      await installHook(hook, completion)
       p.log.success(`Added the hook to ${tildify(hook.rcFile)}.`)
     }
   }

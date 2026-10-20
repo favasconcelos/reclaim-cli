@@ -52,13 +52,14 @@ reclaim-cli scan [--all] [--json] [--quiet] [--notify]
 reclaim-cli review                       pick projects to clean interactively
 reclaim-cli clean [paths…] [--dry-run] [-y]
 reclaim-cli schedule install|uninstall|status [--at HH:mm]
-reclaim-cli hook install|print           terminal reminder for new zsh shells
+reclaim-cli hook install|print           terminal reminder + completion for new zsh shells
+reclaim-cli completion zsh               print the zsh completion script
 reclaim-cli snooze <3d|12h> | --clear    mute reminders
 reclaim-cli log [-n 20]                  history of removals
 reclaim-cli config get [key] | set <key> <value>
 ```
 
-### Terminal reminder
+### Terminal reminder and zsh completion
 
 `reclaim-cli init` offers to set this up, or run it yourself:
 
@@ -68,8 +69,19 @@ reclaim-cli hook install
 
 This writes `~/.config/reclaim-cli/hook.zsh` and adds one line to `~/.zshrc` that sources it. The script is
 pure zsh, so opening a terminal never starts Node and nothing breaks if `reclaim-cli` is not on your PATH.
-It prints the reminder once, on the first prompt (compatible with Powerlevel10k's instant prompt).
-Reminders older than 3 days are ignored.
+On the first prompt it prints the pending reminder (compatible with Powerlevel10k's instant prompt, reminders
+older than 3 days are ignored) and registers tab completion for `reclaim-cli`:
+
+- commands and subcommands, with descriptions (`reclaim-cli sch<TAB>`, `reclaim-cli schedule <TAB>`)
+- flags with descriptions (`reclaim-cli scan --<TAB>`)
+- folders for `add`, `remove`, `ignore` and `clean`; setting names for `config get|set`, and `true`/`false`
+  for boolean settings
+
+The completion is generated from the CLI's own command tree. After upgrading, run
+`reclaim-cli hook install` again to refresh it. It needs zsh's completion system (`compinit`), which
+frameworks such as oh-my-zsh already enable.
+
+Prefer to wire it up yourself? `source <(reclaim-cli completion zsh)` after `compinit` does the same.
 
 ### Daily schedule
 

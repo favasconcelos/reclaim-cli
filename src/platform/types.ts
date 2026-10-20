@@ -40,8 +40,8 @@ export interface ShellHook {
   rcLine: string
   /** Lines written by older versions that should be replaced by `rcLine`. */
   legacyRcLines: string[]
-  /** Contents of `scriptFile`. */
-  script(): string
+  /** Contents of `scriptFile`. `completion` is shell code that defines the completion functions. */
+  script(options?: { completion?: string }): string
 }
 
 export interface Platform {
