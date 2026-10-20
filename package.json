@@ -16,11 +16,11 @@
   "author": "Felipe Vasconcelos",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/favasconcelos/stale.git"
+    "url": "git+https://github.com/favasconcelos/reclaim-cli.git"
   },
-  "homepage": "https://github.com/favasconcelos/stale#readme",
+  "homepage": "https://github.com/favasconcelos/reclaim-cli#readme",
   "bugs": {
-    "url": "https://github.com/favasconcelos/stale/issues"
+    "url": "https://github.com/favasconcelos/reclaim-cli/issues"
   },
   "type": "module",
   "bin": {
