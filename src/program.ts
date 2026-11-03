@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { cleanCommand } from '@/cli/commands/clean'
-import { completionCommand } from '@/cli/commands/completion'
+import { completionCommand, hookCompletionSnippet } from '@/cli/commands/completion'
 import { configGetCommand, configSetCommand } from '@/cli/commands/config'
 import { addCommand, ignoreCommand, removeCommand } from '@/cli/commands/folders'
 import { hookInstallCommand, hookPrintCommand } from '@/cli/commands/hook'
@@ -15,7 +15,7 @@ import {
 } from '@/cli/commands/schedule'
 import { snoozeCommand } from '@/cli/commands/snooze'
 import { defaultHints } from '@/completion/hints'
-import { generateZshCompletion } from '@/completion/zsh'
+import { getPlatform } from '@/platform'
 import { ReclaimError } from '@/util/errors'
 import { c } from '@/util/format'
 import pkg from '../package.json' with { type: 'json' }
@@ -30,7 +30,16 @@ export function buildProgram(): Command {
 
   const hints = defaultHints()
   // Generated lazily so the script always reflects the commands registered below.
-  const completion = () => generateZshCompletion(program, hints)
+  // Matches the current platform hook shell (zsh/bash/powershell).
+  const completion = () => {
+    let shell = 'zsh'
+    try {
+      shell = getPlatform().hook.shell
+    } catch {
+      // Keep building completion even where no platform matches (tests).
+    }
+    return hookCompletionSnippet(shell, program, hints)
+  }
 
   /** Wraps an action so expected failures print a clean message instead of a stack trace. */
   function action<A extends unknown[]>(fn: (...args: A) => Promise<void> | void) {
@@ -103,7 +112,7 @@ export function buildProgram(): Command {
     .description('show whether the daily scan is healthy')
     .action(action(scheduleStatusCommand))
 
-  const hook = program.command('hook').description('terminal reminder for new shells (zsh)')
+  const hook = program.command('hook').description('terminal reminder for new shells')
   hook
     .command('install')
     .description('write the hook script and source it from your shell rc file')
@@ -137,7 +146,7 @@ export function buildProgram(): Command {
 
   program
     .command('completion <shell>')
-    .description('print the shell completion script (zsh)')
+    .description('print the shell completion script (zsh, bash, powershell)')
     .action(action((shell: string) => completionCommand(shell, program, hints)))
 
   return program

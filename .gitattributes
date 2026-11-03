@@ -1,0 +1,4 @@
+# Enforce LF everywhere so Biome (and tsup output checks) behave the same on
+# macOS, Linux and Windows. Without this, Windows checkouts convert to CRLF
+# and `npm run lint` fails with formatter diffs on every file.
+* text=auto eol=lf

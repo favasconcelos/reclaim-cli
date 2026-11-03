@@ -8,7 +8,7 @@ Finds projects you haven't touched in a while and reclaims the disk space taken 
 regenerable build output (`node_modules`, `.build`, `DerivedData`, Gradle `build`, …).
 Source files are never touched.
 
-macOS only for now. Supports Node.js, Swift (SwiftPM / Xcode) and Android (Gradle) projects.
+macOS, Linux and Windows. Supports Node.js, Swift (SwiftPM / Xcode) and Android (Gradle) projects.
 
 ## Install
 
@@ -26,9 +26,10 @@ To run from source instead: `npm ci && npm run build && npm link`.
 2. **Judge** – a project is *stale* when its most recent sign of life is older than `staleAfterDays`
    (default 60). Signs of life: newest source-file mtime (artifact folders excluded), last commit, last
    change to `.git/HEAD` / `.git/index`.
-3. **Measure** – sizes the artifacts of stale projects with `du`.
-4. **Remind** – the daily job writes `~/.local/state/reclaim-cli/pending` and sends a notification when at
-   least `minReclaimableMB` can be reclaimed. A tiny zsh hook prints that line when you open a terminal.
+3. **Measure** – sizes the artifacts of stale projects (`du` on macOS/Linux, recursive walk on Windows).
+4. **Remind** – the daily job updates the `pending` file in the state dir and sends a native notification
+   (`node-notifier`: Notification Center / toasts / `notify-send`) when at
+   least `minReclaimableMB` can be reclaimed. A tiny shell hook prints that line when you open a terminal.
 5. **Clean** – `reclaim-cli review` (interactive) or `reclaim-cli clean` removes only artifacts.
 
 ### What counts as an artifact
@@ -56,14 +57,14 @@ reclaim-cli scan [--all] [--json] [--quiet] [--notify]
 reclaim-cli review                       pick projects to clean interactively
 reclaim-cli clean [paths…] [--dry-run] [-y]
 reclaim-cli schedule install|uninstall|status [--at HH:mm]
-reclaim-cli hook install|print           terminal reminder + completion for new zsh shells
-reclaim-cli completion zsh               print the zsh completion script
+reclaim-cli hook install|print           terminal reminder + completion for new shells
+reclaim-cli completion <zsh|bash|powershell>  print the completion script
 reclaim-cli snooze <3d|12h> | --clear    mute reminders
 reclaim-cli log [-n 20]                  history of removals
 reclaim-cli config get [key] | set <key> <value>
 ```
 
-### Terminal reminder and zsh completion
+### Terminal reminder and shell completion
 
 `reclaim-cli init` offers to set this up, or run it yourself:
 
@@ -71,8 +72,8 @@ reclaim-cli config get [key] | set <key> <value>
 reclaim-cli hook install
 ```
 
-This writes `~/.config/reclaim-cli/hook.zsh` and adds one line to `~/.zshrc` that sources it. The script is
-pure zsh, so opening a terminal never starts Node and nothing breaks if `reclaim-cli` is not on your PATH.
+This writes a per-platform hook script (zsh on macOS, bash on Linux, PowerShell on Windows) and sources it from your shell rc file. The script is
+pure shell, so opening a terminal never starts Node and nothing breaks if `reclaim-cli` is not on your PATH.
 On the first prompt it prints the pending reminder (compatible with Powerlevel10k's instant prompt, reminders
 older than 3 days are ignored) and registers tab completion for `reclaim-cli`:
 
@@ -89,15 +90,15 @@ Prefer to wire it up yourself? `source <(reclaim-cli completion zsh)` after `com
 
 ### Daily schedule
 
-`reclaim-cli schedule install` writes a launchd agent (`dev.reclaim-cli.daily`) that runs
+`reclaim-cli schedule install` installs a daily job (launchd on macOS, systemd/cron on Linux, Task Scheduler on Windows) that runs
 `reclaim-cli scan --notify --quiet` at `scheduleAt`. The agent stores the absolute path to Node and to
 `reclaim-cli`; if you switch Node versions, run `reclaim-cli schedule install` again (`reclaim-cli schedule status`
-tells you when it's broken). If macOS blocks notifications, enable them under
-System Settings → Notifications (for `terminal-notifier` if installed, otherwise Script Editor).
+tells you when it's broken). If notifications are blocked, enable them under
+System Settings → Notifications (Notification Center / toasts / notify-send).
 
 ## Configuration
 
-`~/.config/reclaim-cli/config.json` (state in `~/.local/state/reclaim-cli/`). Override locations with
+`~/.config/reclaim-cli/config.json` on macOS/Linux (`%APPDATA%/reclaim-cli` on Windows; state in `~/.local/state/reclaim-cli/`, `%LOCALAPPDATA%/reclaim-cli` on Windows). Override locations with
 `RECLAIM_CLI_CONFIG_DIR` / `RECLAIM_CLI_STATE_DIR`.
 
 | Key | Default | |
@@ -116,8 +117,8 @@ System Settings → Notifications (for `terminal-notifier` if installed, otherwi
 
 - **New project type**: implement `ProjectType` (`src/core/types.ts`) in `src/types/` and register it in
   `src/types/index.ts`.
-- **New OS**: implement `Platform` (`src/platform/types.ts`: paths, scheduler, notifier, shell hook) and
-  return it from `src/platform/index.ts`.
+- **New scheduler/hook**: implement `Scheduler`/`ShellHook` for your OS in `src/platform/<os>/` and wire it in
+  `src/platform/index.ts` (paths, scheduler, notifier, shell hook).
 
 ## Development
 

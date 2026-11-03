@@ -17,7 +17,13 @@ export async function scheduleInstallCommand(flags: { at?: string }): Promise<vo
 
   await ctx.platform.scheduler.install({ at, command: dailyCommand(), logDir: ctx.paths.stateDir })
   console.log(`${c.green('✔')} Daily scan scheduled at ${at}.`)
-  console.log(c.dim('macOS may ask you to allow notifications the first time one is shown.'))
+  if (process.platform === 'darwin')
+    console.log(c.dim('macOS may ask you to allow notifications the first time one is shown.'))
+  else if (process.platform === 'win32')
+    console.log(
+      c.dim('Windows may ask you to allow notifications; check Settings → System → Notifications.'),
+    )
+  else console.log(c.dim('Linux notifications need notify-send and a running notification daemon.'))
 }
 
 export async function scheduleUninstallCommand(): Promise<void> {
