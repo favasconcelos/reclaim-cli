@@ -26,6 +26,8 @@ export async function installHook(
   await mkdir(dirname(hook.scriptFile), { recursive: true })
   await writeFile(hook.scriptFile, hook.script({ completion }))
 
+  // PowerShell profiles live in a directory that may not exist yet.
+  await mkdir(dirname(hook.rcFile), { recursive: true }).catch(() => {})
   const rc = await readRcFile(hook)
   if (isHookInstalled(rc, hook)) return 'unchanged'
 

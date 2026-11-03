@@ -14,8 +14,12 @@ export function tildify(p: string): string {
   return p
 }
 
-/** True when `child` is strictly inside `parent`. */
+/** True when `child` is strictly inside `parent`. Case-insensitive on Windows. */
 export function isInside(child: string, parent: string): boolean {
+  if (process.platform === 'win32') {
+    const rel = relative(parent.toLowerCase(), child.toLowerCase())
+    return rel !== '' && rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel)
+  }
   const rel = relative(parent, child)
   return rel !== '' && rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel)
 }

@@ -1,6 +1,6 @@
 import { appendFile, lstat, mkdir, rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { dirname, resolve } from 'node:path'
+import { dirname, parse, resolve } from 'node:path'
 import type { ArtifactReport, ProjectReport } from '@/core/types'
 import { isInside } from '@/util/path'
 
@@ -48,7 +48,10 @@ export function buildPlan(projects: readonly ProjectReport[]): CleanPlan {
 export function removalBlocker(path: string, scope: string): string | null {
   const target = resolve(path)
   const boundary = resolve(scope)
-  if (target === '/' || target === resolve(homedir())) return 'refusing to remove a protected path'
+  const home = resolve(homedir())
+  if (target === home) return 'refusing to remove a protected path'
+  // Refuse filesystem roots on every OS (`/`, `C:\`, UNC roots, …).
+  if (parse(target).root === target) return 'refusing to remove a protected path'
   if (!isInside(target, boundary)) return `path is outside its allowed scope (${boundary})`
   return null
 }

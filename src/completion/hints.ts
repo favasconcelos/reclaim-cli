@@ -30,6 +30,6 @@ export function defaultHints(): Hints {
         map: Object.fromEntries(booleanKeys.map((key) => [key, ['true', 'false']])),
       },
     ],
-    completion: [{ type: 'values', values: ['zsh'] }],
+    completion: [{ type: 'values', values: ['zsh', 'bash', 'powershell'] }],
   }
 }
