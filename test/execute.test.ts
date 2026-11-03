@@ -73,7 +73,8 @@ describe('executePlan', () => {
     const dir = await tempDir()
     const outside = await tempDir()
     await writeFile(join(outside, 'precious.txt'), 'x')
-    await symlink(outside, join(dir, 'node_modules'))
+    // Junctions are the Windows-safe way to link directories without privileges.
+    await symlink(outside, join(dir, 'node_modules'), 'junction')
 
     const results = await executePlan(
       buildPlan([project(dir, [join(dir, 'node_modules'), outside])]),
