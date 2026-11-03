@@ -1,5 +1,5 @@
 import { stat } from 'node:fs/promises'
-import { basename, relative, resolve } from 'node:path'
+import { basename, relative, resolve, sep } from 'node:path'
 import type { Config } from '@/config/schema'
 import { lastActivity } from '@/core/activity'
 import { isHeavyDir, isRealDirectory, readEntries } from '@/core/fs'
@@ -130,8 +130,11 @@ async function analyzeProject(
     else if (git.unpushed) protectedReason = 'unpushed commits'
   }
 
+  // Labels use forward slashes on every OS so reports and tests are stable.
   const labelOf = (artifact: Artifact) =>
-    isInside(artifact.path, root) ? relative(root, artifact.path) : artifact.label
+    isInside(artifact.path, root)
+      ? relative(root, artifact.path).split(sep).join('/')
+      : artifact.label
 
   const measured: ArtifactReport[] =
     stale || options.includeActive
